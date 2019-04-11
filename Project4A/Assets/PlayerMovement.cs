@@ -9,7 +9,7 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 10f;
     public float contactThreshold = 30f;
 
-    private bool grounded = false;
+    public bool grounded = false;
     private Vector3 validDirection = Vector3.up;
 
     private Animator animator;
@@ -49,17 +49,44 @@ public class PlayerMovement : MonoBehaviour
             GetComponent<Rigidbody2D>().AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
             animator.SetTrigger("Jump");
         }
-        
 
+        CheckGrounded();
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void CheckGrounded()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, -Vector2.up, 0.01f);
+        if (hit.collider != null)
+        {
+            if (hit.collider.gameObject.tag == "Platform")
+            {
+                grounded = true;
+                animator.SetBool("Landed", true);
+                Debug.Log("Landed");
+                return;
+            }
+        }
+
+        /*Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, .05f);
+        foreach (var col in colliders)
+        {
+            if (col.gameObject.tag == "Platform")
+            {
+                grounded = true;
+                return;
+            }
+        }*/
+        animator.SetBool("Landed", false);
+        grounded = false;
+    }
+
+    /*private void OnCollisionEnter2D(Collision2D collision)
     {
         for (int i = 0; i < collision.contacts.Length; i++)
         {
             if (Vector3.Angle(collision.contacts[i].normal, validDirection) <= contactThreshold)
             {
-                grounded = true;
+               // grounded = true;
 
 
 
@@ -74,11 +101,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnCollisionExit2D(Collision2D collision)
     {
-        grounded = false;
+       // grounded = false;
         animator.SetBool("Landed", false);
     }
 
-    /*private void OnCollisionStay2D(Collision2D collision)
+    private void OnCollisionStay2D(Collision2D collision)
     {
         grounded = true;
     }*/

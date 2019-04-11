@@ -7,11 +7,57 @@ public class Autoscroll : MonoBehaviour
     public enum Direction { Left, Right, Up, Down }
 
     public Direction direction = Direction.Right;
-    public float speed = 1f;
+    public float defaultSpeed = 1f;
+    public bool adjustSpeed = false;
+    public float maxDistance = 3f;
+    public float speedUpRate = 1.2f;
+    public float speedDelay = 2f;
+
+    [SerializeField]
+    private float speed;
+
+    private void Awake()
+    {
+        speed = defaultSpeed;
+    }
+
+    private void Start()
+    {
+        if (adjustSpeed)
+        {
+            InvokeRepeating("AdjustSpeed", speedDelay, speedDelay);
+        }
+    }
 
     public void Update()
     {
         Scroll();
+    }
+
+    private void AdjustSpeed()
+    {
+        var player = GameObject.FindGameObjectWithTag("Player");
+        
+        // Only works scrolling to the right for now
+        if (player.transform.position.x - transform.position.x > maxDistance)
+        {
+            StartCoroutine(SpeedUp());
+        }
+        else
+        {
+            StopCoroutine(SpeedUp());
+            speed = defaultSpeed;
+        }
+
+    }
+
+    private IEnumerator SpeedUp()
+    {
+        speed = speed * speedUpRate;
+
+        yield return new WaitForSeconds(speedDelay);
+
+        SpeedUp();
     }
 
     private void Scroll()
